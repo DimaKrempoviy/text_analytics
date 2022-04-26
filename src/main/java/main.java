@@ -1,103 +1,106 @@
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-class wordFreq {
-    private static final Scanner in = new Scanner(System.in);
-    private static String[] w = null;
-    private static int[] r = null;
-    public static void main(String[] args) {
-        System.out.println("Absolute path to the file:  ");
-        String fileName = in.next();
-        System.out.println("Choose one of the following actions: ");
-        System.out.println("1) top N most used words ");
-        System.out.println("2) top N most used characters");
-        System.out.println("3) analytics by words (how many which word occurs in percentage and their number)");
-        System.out.println("4) character analytics (how many and how many characters occur in percentage)");
-        System.out.println("5) save analytics");
-        int number = in.nextInt();
-        switch (number) {
-            case 1:
-            try {
-                System.out.println("Enter 'N' value: ");
-                int n = in.nextInt();
-                w = new String[n];
-                r = new int[n];
-                FileReader fr = new FileReader(fileName);
-                BufferedReader br = new BufferedReader(fr);
-                String text = "";
-                String sz = null;
-                while ((sz = br.readLine()) != null) {
-                    text = text.concat(sz);
-                }
-                String[] words = text.split(" ");
-                String[] uniqueLabels;
-                int count = 0;
-                uniqueLabels = getUniqLabels(words);
-                for (int j = 0; j < n; j++) {
-                    r[j] = 0;
-                }
-                for (String l : uniqueLabels) {
-                    if ("".equals(l) || null == l) {
-                        break;
-                    }
-                    for (String s : words) {
-                        if (l.equals(s)) {
-                            count++;
-                        }
-                    }
+class Main {
 
-                    for (int i = 0; i < n; i++) {
-                        if (count > r[i]) {
-                            r[i] = count;
-                            w[i] = l;
-                            break;
-                        }
-                    }
-                    count = 0;
-                }
-                display(n);
-            } catch (Exception e) {
-                System.err.println("ERR " + e.getMessage());
+    private static final String WORD_REGEX = "[а-яА-Яa-zA-Z]{2,}";
+    private static final String ANY_SYMBOL_REGEX = ".{1}";
+
+    public static void main(String[] args) throws IOException {
+        final Scanner scanner = new Scanner(System.in);
+        System.out.print("Введите путь к файлу: ");
+
+        final Path fileLocation = Paths.get(scanner.nextLine());
+        final String content = getContent(fileLocation);
+
+        if (content == null || content.isEmpty()) {
+            System.out.println("Файл пуст");
+            return;
+        }
+
+        System.out.println(String.format("Файл успешно считан, размер %d байт", Files.size(fileLocation)));
+
+        System.out.println("Пожалуйста, выберите действие:\n\t1.\tтоп N найбільш використаних слів\n\t2.\tтоп N найбільш використаних символів\n\t3.\tаналітика по словам\n\t4.\tаналітика по символам\n\t5.\tзберегти аналітику");
+        System.out.print("Ваш выбор: ");
+        int userChoose = scanner.nextInt();
+
+        System.out.print("Пожалуйста, введите число N: ");
+        int limit = scanner.nextInt();
+
+        switch (userChoose) {
+            case 1: {
+                outputResult(
+                        topMostPopular(content, WORD_REGEX, limit)
+                );
+                break;
             }
-            break;
+            case 2: {
+                outputResult(
+                        topMostPopular(content, ANY_SYMBOL_REGEX, limit)
+                );
+                break;
+            }
+            default: {
+                System.out.println("Такого действия не существует!");
+            }
+        }
 
-            case 2:
+        scanner.close();
+    }
+
+    private static String getContent(Path fileLocation) {
+        try {
+            return
+                    new String(Files.readAllBytes(fileLocation));
+        } catch (IOException e) {
+            System.err.println(String.format("Error while read file because %s", e.getMessage()));
+            return null;
         }
     }
 
-    public static void display(int n){
-        for(int k=0; k<n; k++){
-            System.out.println("Label :: "+w[k]+"\tCount :: "+r[k]);
+    private static void outputResult(Map<String, Long> result) {
+        int top = 1;
+        for (Map.Entry<String, Long> entry : result.entrySet()) {
+            System.out.println(String.format("%d место\t \"%s\" / %d повторений", top++, entry.getKey(), entry.getValue()));
         }
     }
 
-    private static String[] getUniqLabels(String[] keys)
-    {
-        String[] uniqueKeys = new String[keys.length];
-
-        uniqueKeys[0] = keys[0];
-        int uniqueKeyIndex = 1;
-        boolean keyAlreadyExists = false;
-
-        for(int i=1; i<keys.length ; i++)
-        {
-            for(int j=0; j<=uniqueKeyIndex; j++)
-            {
-                if(keys[i].equals(uniqueKeys[j]))
-                {
-                    keyAlreadyExists = true;
-                }
-            }
-
-            if(!keyAlreadyExists)
-            {
-                uniqueKeys[uniqueKeyIndex] = keys[i];
-                uniqueKeyIndex++;
-            }
-            keyAlreadyExists = false;
-        }
-        return uniqueKeys;
+    private static Map<String, Long> topMostPopular(String content, String regex, int limit) {
+        return splitContentBy(content, regex).stream()
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue(Long::compareTo)))
+                .limit(limit)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
+
+    private static List<String> splitContentBy(String content, String regex) {
+        final List<String> result = new ArrayList<>();
+        final Matcher matcher = Pattern.compile(regex)
+                .matcher(content);
+        while (matcher.find()) {
+            result.add(matcher.group(0).toLowerCase());
+        }
+
+        return result;
+    }
+
+
+
+
+
 
 }
