@@ -20,23 +20,28 @@ class Main {
 
     public static void main(String[] args) throws IOException {
         final Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите путь к файлу: ");
+        System.out.print("Enter file path: ");
 
         final Path fileLocation = Paths.get(scanner.nextLine());
         final String content = getContent(fileLocation);
 
         if (content == null || content.isEmpty()) {
-            System.out.println("Файл пуст");
+            System.out.println("File is empty");
             return;
         }
 
-        System.out.println(String.format("Файл успешно считан, размер %d байт", Files.size(fileLocation)));
+        System.out.printf("File read successfully, size %d bytes", Files.size(fileLocation));
 
-        System.out.println("Пожалуйста, выберите действие:\n\t1.\tтоп N найбільш використаних слів\n\t2.\tтоп N найбільш використаних символів\n\t3.\tаналітика по словам\n\t4.\tаналітика по символам\n\t5.\tзберегти аналітику");
-        System.out.print("Ваш выбор: ");
+        System.out.println("Please select an action: ");
+        System.out.println("1.	 top n most used words");
+        System.out.println("2.	 top n most used characters");
+        System.out.println("3.	 analytics by words");
+        System.out.println("4.	 symbol analytics");
+        System.out.println("5.   save analytics");
+        System.out.print("Your choice: ");
         int userChoose = scanner.nextInt();
 
-        System.out.print("Пожалуйста, введите число N: ");
+        System.out.print("Please enter number N: ");
         int limit = scanner.nextInt();
 
         switch (userChoose) {
@@ -53,7 +58,7 @@ class Main {
                 break;
             }
             default: {
-                System.out.println("Такого действия не существует!");
+                System.out.println("There is no such action!");
             }
         }
 
@@ -65,7 +70,7 @@ class Main {
             return
                     new String(Files.readAllBytes(fileLocation));
         } catch (IOException e) {
-            System.err.println(String.format("Error while read file because %s", e.getMessage()));
+            System.err.printf("Error while read file because %s", e.getMessage());
             return null;
         }
     }
@@ -73,7 +78,7 @@ class Main {
     private static void outputResult(Map<String, Long> result) {
         int top = 1;
         for (Map.Entry<String, Long> entry : result.entrySet()) {
-            System.out.println(String.format("%d место\t \"%s\" / %d повторений", top++, entry.getKey(), entry.getValue()));
+            System.out.printf(" \n %d place \t \"%s\" / %d repetitions", top++, entry.getKey(), entry.getValue());
         }
     }
 
