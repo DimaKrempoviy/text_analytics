@@ -2,21 +2,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 class Main {
-
-    private static final String WORD_REGEX = "[а-яА-Яa-zA-Z]{2,}";
-    private static final String ANY_SYMBOL_REGEX = ".{1}";
 
     public static void main(String[] args) throws IOException {
         final Scanner scanner = new Scanner(System.in);
@@ -41,19 +36,21 @@ class Main {
         System.out.print("Your choice: ");
         int userChoose = scanner.nextInt();
 
-        System.out.print("Please enter number N: ");
-        int limit = scanner.nextInt();
 
         switch (userChoose) {
             case 1: {
+                System.out.print("Please enter number N: ");
+                int limit = scanner.nextInt();
                 outputResult(
-                        topMostPopular(content, WORD_REGEX, limit)
+                        topMostPopular(content, limit)
                 );
                 break;
             }
             case 2: {
+                System.out.print("Please enter number N : ");
+                int limit = scanner.nextInt();
                 outputResult(
-                        topMostPopular(content, ANY_SYMBOL_REGEX, limit)
+                        topMostPopular(content, limit)
                 );
                 break;
             }
@@ -82,8 +79,8 @@ class Main {
         }
     }
 
-    private static Map<String, Long> topMostPopular(String content, String regex, int limit) {
-        return splitContentBy(content, regex).stream()
+    private static Map<String, Long> topMostPopular(String content, int limit) {
+        return Stream.of(content.split(" "))
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
                 .stream()
@@ -91,21 +88,5 @@ class Main {
                 .limit(limit)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
-
-    private static List<String> splitContentBy(String content, String regex) {
-        final List<String> result = new ArrayList<>();
-        final Matcher matcher = Pattern.compile(regex)
-                .matcher(content);
-        while (matcher.find()) {
-            result.add(matcher.group(0).toLowerCase());
-        }
-
-        return result;
-    }
-
-
-
-
-
 
 }
