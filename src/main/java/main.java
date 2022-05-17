@@ -39,7 +39,7 @@ class Main {
                 System.out.print("Please enter number N: ");
                 int limit = scanner.nextInt();
                 outputResult(
-                        topMostPopular(Arrays.toString(content.split(" ")), limit)
+                        topMostPopular(content.split(" "), limit)
                 );
                 break;
             }
@@ -47,7 +47,7 @@ class Main {
                 System.out.print("Please enter number N : ");
                 int limit = scanner.nextInt();
                 outputResult(
-                        topMostPopular(Arrays.toString(content.split("")), limit)
+                        topMostPopular(content.split(""), limit)
                 );
                 break;
             }
@@ -76,7 +76,7 @@ class Main {
         }
     }
 
-    private static Map<String, Long> topMostPopular(String content, int limit) {
+    private static Map<String, Long> topMostPopular(String[] content, int limit) {
         return Stream.of(content)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
