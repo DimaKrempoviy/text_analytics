@@ -2,10 +2,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,10 +25,10 @@ class Main {
         System.out.printf("File read successfully, size %d bytes", Files.size(fileLocation));
 
         System.out.println("Please select an action: ");
-        System.out.println("1.	 top n most used words");
-        System.out.println("2.	 top n most used characters");
-        System.out.println("3.	 analytics by words");
-        System.out.println("4.	 symbol analytics");
+        System.out.println("1.   top n most used words");
+        System.out.println("2.   top n most used characters");
+        System.out.println("3.   analytics by words");
+        System.out.println("4.   symbol analytics");
         System.out.println("5.   save analytics");
         System.out.print("Your choice: ");
         int userChoose = scanner.nextInt();
@@ -42,7 +39,7 @@ class Main {
                 System.out.print("Please enter number N: ");
                 int limit = scanner.nextInt();
                 outputResult(
-                        topMostPopular(content, limit)
+                        topMostPopular(Arrays.toString(content.split(" ")), limit)
                 );
                 break;
             }
@@ -50,7 +47,7 @@ class Main {
                 System.out.print("Please enter number N : ");
                 int limit = scanner.nextInt();
                 outputResult(
-                        topMostPopular(content, limit)
+                        topMostPopular(Arrays.toString(content.split("")), limit)
                 );
                 break;
             }
@@ -80,7 +77,7 @@ class Main {
     }
 
     private static Map<String, Long> topMostPopular(String content, int limit) {
-        return Stream.of(content.split(" "))
+        return Stream.of(content)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
                 .stream()
