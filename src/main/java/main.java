@@ -51,6 +51,23 @@ class Main {
                 );
                 break;
             }
+            case 3: {
+                System.out.print("analytics by words");
+                int limit = scanner.nextInt();
+                outputResult(
+                        topMostPopular(content.split(""), limit)
+                );
+                break;
+            }
+
+            case 4: {
+                System.out.print("symbol analytics");
+                int limit = scanner.nextInt();
+                outputResult(
+                        topMostPopular(content.split(""), limit)
+                );
+                break;
+            }
             default: {
                 System.out.println("There is no such action!");
             }
@@ -69,14 +86,15 @@ class Main {
         }
     }
 
-    private static void outputResult(Map<String, Long> result) {
+    private static void outputResult(Map<String, ValueUse> result) {
         int top = 1;
-        for (Map.Entry<String, Long> entry : result.entrySet()) {
+        for (Map.Entry<String, ValueUse> entry : result.entrySet()) {
             System.out.printf(" \n %d place \t \"%s\" / %d repetitions", top++, entry.getKey(), entry.getValue());
         }
     }
 
-    private static Map<String, Long> topMostPopular(String[] content, int limit) {
+
+    private static Map<String, ValueUse> topMostPopular(String[] content, int limit) {
         return Stream.of(content)
                 .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
                 .entrySet()
@@ -86,4 +104,6 @@ class Main {
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e1, LinkedHashMap::new));
     }
 
+
 }
+
